@@ -1,0 +1,46 @@
+#!/bin/bash
+# Maintainer: Brian Wilson <doc@wiltech.org>
+# Licence: MIT
+
+# Debug messaging
+_info_msg() {
+    local _msg="${@}"
+
+    if [[ ${debug} ]]; then
+        if [[ ! -d ${log_dir} || ! -f ${log_file} ]]; then
+            mkdir -p ${log_dir}
+            touch ${log_file}
+        fi
+        # Echo message to console and append to log file
+        echo -e "${_msg}" | tee -a ${log_file}
+    elif [[ ! ${verbose} ]]; then
+        # Echo message to console only
+        echo -e "${_msg}"
+    fi
+}
+
+# Debug error messaging
+_err_msg() {
+    local _exit_code=${1}
+    local _msg="ERROR => ${@:2}"
+
+    _info_msg "${_msg}"
+    exit ${_exit_code}
+}
+
+_pacstrap() {
+    _info_msg "PACMAN: Installing packages to ${work_dir}/root"
+    
+    if [[ ${verbose} ]]; then
+        pacstrap -C ${pacman_conf} -c -d -G -M ${work_dir}/root $*
+    elif [[ ${debug} ]]; then
+        pacstrap -C ${pacman_conf} -c -d -G -M ${work_dir}/root $* | tee -a ${log_file}
+    else
+        pacstrap -C ${pacman_conf} -c -d -G -M ${work_dir}/root $* &> /dev/null
+    fi
+}
+
+_chroot() {
+    local _result=$(eval arch-chroot ${build_dir} ${1} 2>&1)
+    return $?
+}

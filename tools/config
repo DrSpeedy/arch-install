@@ -1,0 +1,38 @@
+# vim:ft=config
+# Maintainer: Brian Wilson <doc@wiltech.org>
+# Licence: MIT
+
+## General
+work_dir=/tmp/wiltech-inst-$(date +'%Y-%m-%d')
+tool_dir=${script_dir}
+mount_dir=${work_dir}/mnt
+log_dir=${script_dir}/logs
+
+log_file=$(date +'%Y-%m-%d')-$(git rev-parse --short HEAD).log
+pacman_conf=${script_dir}/../pacman.conf
+
+cleanup=y
+debug=y
+verbose=y                               # Verbosity will default to 'y' if debug mode is enabled
+
+## Filesystem
+express=luks-lvm
+boot=grub-efi
+#boot_splash=/path/to/splash.png        # Must be supported by ExpressFS
+special_data_dir=y
+
+## Packages
+create_pool=n
+
+## Provision automation
+hostname=WilTech-WS-$$
+domain=inter.wiltech.org
+admin=doc                               # Username of the sudo user
+sshd_pubkey=/home/doc/.ssh/id_rsa.pub
+block_root_ssh=y
+copy_nm_connection=y                    # Copy the current active NetworkManager session to the new build
+build_script=/root/build_custom.sh
+#first_run_script=/root/first_run.sh
+efs_script=luks-lvm
+eboot_script=grub-efi
+

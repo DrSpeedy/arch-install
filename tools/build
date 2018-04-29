@@ -1,0 +1,124 @@
+#!/bin/bash
+# Maintainer: Brian Wilson <doc@wiltech.org>
+# Licence: MIT
+
+#set -xe
+
+# Path to the directory this script is running
+# from. This value should always be the base directory of
+# the project.
+export script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# setup_keymap() {}
+# setup_network() {}
+# setup_hwclock() {}
+setup_install_disk() {
+    local _dev_list=$(lsblk -dplnx size -o name,size | grep -Ev "boot|rpmb|loop" | tac)
+    export install_dev=$(dialog --stdout --menu "Select installtion disk" 0 0 0 ${_dev_list}) || exit 1
+    clear
+
+    echo ""
+    echo "$(ls -l fs/scripts)"
+    local _efs_script=$(dialog --stdout --menu "Select a partition scheme" 0 0 0 $(ls -1 ${script_dir}/fs/scripts)) || exit 1
+    echo "${_efs_script}"
+}
+# setup_partitions() {}
+# setup_provision() {}
+# setup_boot() {}
+# clean_up() {}
+# install() {}
+# makepkg() {}
+
+# Initialize pacman config
+pacman_init() {
+    local _cache_dirs
+    _cache_dirs=($(pacman -v 2>&1 | grep '^Cache Dirs:' | sed 's/Cache Dirs:\s*//g'))
+    sed -r "s|^#?\\s*CacheDir.+|CacheDir = $(echo -n ${_cache_dirs[@]})|g" ${pacman_conf} > ${work_dir}/pacman.conf
+}
+
+init() {
+    echo "Initializing build scripts..."
+
+    # Load and export variables from config file
+    local _config_raw=$(sed '/^[[:blank:]]*#/d;s/#.*//;/^$/d' ${script_dir}/config)
+
+    while read -r _cvar; do
+        export "$(eval echo $_cvar)"
+    done <<< "$_config_raw"
+
+    echo "$tool_dir"
+
+    exit 1
+    # Debug presets
+    if [[ ${debug} ]]; then
+        # Error handling
+        set -uo pipefail
+        trap 's=$?; _err_msg $s "$0: Line \"$LINENO\": $BASH_COMMAND"' ERR
+
+        # Force verboseness
+        export verbose='y'
+
+        # Version
+        export version=dev-$(date +'%Y-%m-%d')-$(git rev-parse --short HEAD)
+ 
+        # Setup logging
+        mkdir -p ${log_dir}
+        echo -e "=========== Arch Install ===========" >> ${log_dir}/${log_file}
+        echo -e "Version: ${version}"
+        
+        for _cvar in "${_config[@]}"; do
+            echo -e "${_cvar}" | sed -e 's/=/: /g' >> ${log_dir}/${log_file}
+        done
+
+
+    fi
+
+    # Basic sanity check
+    mkdir -p ${work_dir} ${mount_dir} ${tool_dir}
+    
+    # Source some helpful utilities
+    source "${tool_dir}/share/utilrc"
+}
+
+usage() { 
+    echo "Usage: $0 [-d <device node>] [-w <work directory>] [-s]" 1>&2
+    exit 1; 
+}
+
+if [[ ${EUID} -ne 0 ]]; then
+    echo "This script must be run as root!"
+    usage
+fi
+
+while getopts ":w:m:vdch" o; do
+    case "${o}" in
+        w)
+            export work_dir=${OPTARG}
+            ;;
+        m)
+            export mount_dir=${OPTARG}
+            ;;
+        d)
+            export debug=true
+            ;;
+        v)
+            export verbose=true
+            ;;
+        c)
+            export cleanup=true
+            ;;
+        h|*)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ ${EUID} -ne 0 ]]; then
+    _err_msg "This script must be run as the root user."
+fi
+
+init
+
+#setup_install_disk
+
