@@ -10,21 +10,70 @@
 export script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # setup_keymap() {}
+
 # setup_network() {}
-# setup_hwclock() {}
-setup_install_disk() {
+
+setup_hwclock() {
+    _info_msg "Setting hardware clock time to UTC..."
+    hwclock --systohc --utc
+    _info_msg "Hardware time: $(hwclock --show)"
+}
+
+setup_target_disk() {
     local _dev_list=$(lsblk -dplnx size -o name,size | grep -Ev "boot|rpmb|loop" | tac)
     export install_dev=$(dialog --stdout --menu "Select installtion disk" 0 0 0 ${_dev_list}) || exit 1
     clear
 
-    echo ""
-    echo "$(ls -l fs/scripts)"
-    local _efs_script=$(dialog --stdout --menu "Select a partition scheme" 0 0 0 $(ls -1 ${script_dir}/fs/scripts)) || exit 1
-    echo "${_efs_script}"
+    local _efs_script=$(dialog --stdout --title "Please choose a file" --fselect ${tool_dir}/fs/scripts/ 14 48)
+
+    local _dialog_msg="WARNING: You are about to wipe all data on ${install_dev}! \
+        This operation is non-reversable! Are you sure you'd like to continue?"
+    dialog --title "WARNING!" --yesno "${_dialog_msg}" 14 48
+
+    case $? in
+        0)
+            _info_msg "Provisioning ${install_dev}..."
+            eval "${_efs_script} -w ${work_dir} -d ${install_dev} -s"
+            ;;
+        *)
+            _err_msg -1 "Installation aborted!"
+            ;;
+    esac
 }
-# setup_partitions() {}
-# setup_provision() {}
-# setup_boot() {}
+
+setup_rootfs() {
+    _info_msg "Installing system to ${mount_dir}..."
+
+    local _pkgs=$(grep -v -h ^# ${script_dir}/../pkglist.{any,${arch}})
+    _pacman "${_pkgs}"
+
+    _info_msg "Syncing provisioning package..."
+    _rsync ${script_dir}/../airootfs/* ${mount_dir}
+    if [[ -f "${build_dir}/${build_custom}" ]]; then
+        _info_msg "Running ${build_custom} on target system!"
+        _chroot "${build_custom}"
+        rm -f "${mount_dir}/${build_custom}"
+    fi
+}
+
+setup_boot() {
+
+    local _eb_script=$(dialog --stdout --title "Please choose a file" --fselect ${tool_dir}/boot/grub/scripts/ 14 48)
+
+    local _dialog_msg="WARNING: You are about to install GRUB EFI on ${install_dev}! \
+        Are you sure you'd like to continue?"
+    dialog --title "WARNING!" --yesno "${_dialog_msg}" 14 48
+
+    case $? in
+        0)
+            _info_msg "Provisioning ${install_dev}..."
+            eval "${_eb_script}"
+            ;;
+        *)
+            _err_msg -1 "Installation aborted!"
+            ;;
+    esac
+}
 # clean_up() {}
 # install() {}
 # makepkg() {}
@@ -39,6 +88,8 @@ pacman_init() {
 init() {
     echo "Initializing build scripts..."
 
+    export arch=$(uname -m)
+
     # Load and export variables from config file
     local _config_raw=$(sed '/^[[:blank:]]*#/d;s/#.*//;/^$/d' ${script_dir}/config)
 
@@ -46,9 +97,6 @@ init() {
         export "$(eval echo $_cvar)"
     done <<< "$_config_raw"
 
-    echo "$tool_dir"
-
-    exit 1
     # Debug presets
     if [[ ${debug} ]]; then
         # Error handling
@@ -63,21 +111,24 @@ init() {
  
         # Setup logging
         mkdir -p ${log_dir}
-        echo -e "=========== Arch Install ===========" >> ${log_dir}/${log_file}
-        echo -e "Version: ${version}"
-        
-        for _cvar in "${_config[@]}"; do
-            echo -e "${_cvar}" | sed -e 's/=/: /g' >> ${log_dir}/${log_file}
-        done
-
-
+        echo -e "=========== DEBUG INFO ===========" | tee -a ${log_file}
+        echo -e "Version: ${version}" | tee -a ${log_file}
+        echo -e "Date: $(date)" | tee -a ${log_file}
+        echo
+        echo -e "CONFIG:" | tee -a ${log_file}
+        while read -r _cvar; do
+            echo -e "\t$(eval echo $_cvar)" | sed -e 's/=/: /g' | tee -a ${log_file}
+        done <<< "$_config_raw"
+        echo -e "==================================" | tee -a ${log_file}
     fi
 
     # Basic sanity check
-    mkdir -p ${work_dir} ${mount_dir} ${tool_dir}
+    mkdir -p ${work_dir} ${build_dir} ${mount_dir} ${tool_dir}
     
     # Source some helpful utilities
     source "${tool_dir}/share/utilrc"
+
+    _info_msg "Initialized."
 }
 
 usage() { 
@@ -119,6 +170,8 @@ if [[ ${EUID} -ne 0 ]]; then
 fi
 
 init
-
-#setup_install_disk
+pacman_init
+setup_target_disk
+setup_rootfs
+# setup_boot
 

@@ -41,7 +41,7 @@ run() {
         'mklabel gpt' \
         'mkpart esp fat32 1MiB 513MiB' \
         'mkpart primary ext4 513MiB 100%' \
-        'name 1 EFI_BOOT' \
+        'name 1 GRUB_BOOT' \
         'name 2 CRYPT_ROOT' \
         'set 1 boot on' \
         'print' \

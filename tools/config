@@ -3,12 +3,14 @@
 # Licence: MIT
 
 ## General
-work_dir=/tmp/wiltech-inst-$(date +'%Y-%m-%d')
+work_dir=$(mktemp -d)
 tool_dir=${script_dir}
-mount_dir=${work_dir}/mnt
+build_dir=${work_dir}/airootfs
+mount_dir=/mnt/usb
+install_dev=/dev/null
 log_dir=${script_dir}/logs
 
-log_file=$(date +'%Y-%m-%d')-$(git rev-parse --short HEAD).log
+log_file=${log_dir}/$(date +'%Y-%m-%d')-$(git rev-parse --short HEAD).log
 pacman_conf=${script_dir}/../pacman.conf
 
 cleanup=y
@@ -16,8 +18,8 @@ debug=y
 verbose=y                               # Verbosity will default to 'y' if debug mode is enabled
 
 ## Filesystem
-express=luks-lvm
-boot=grub-efi
+efs_script=basic
+eboot_script=legacy
 #boot_splash=/path/to/splash.png        # Must be supported by ExpressFS
 special_data_dir=y
 
@@ -25,14 +27,14 @@ special_data_dir=y
 create_pool=n
 
 ## Provision automation
-hostname=WilTech-WS-$$
-domain=inter.wiltech.org
+hostname=WTWS-$$
 admin=doc                               # Username of the sudo user
-sshd_pubkey=/home/doc/.ssh/id_rsa.pub
+build_custom=/root/build_custom.sh
+#first_run_script=/root/first_run.sh
+
+# Adititional
+domain=local.wiltech.org
+ssh_pubkey=/home/doc/.ssh/id_rsa.pub
 block_root_ssh=y
 copy_nm_connection=y                    # Copy the current active NetworkManager session to the new build
-build_script=/root/build_custom.sh
-#first_run_script=/root/first_run.sh
-efs_script=luks-lvm
-eboot_script=grub-efi
 

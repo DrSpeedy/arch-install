@@ -1,0 +1,64 @@
+=========== DEBUG INFO ===========
+Version: dev-2018-05-03-24c25c6
+Date: Thu May  3 21:01:56 EDT 2018
+CONFIG:
+	work_dir: /tmp/tmp.2Q6mMMRanY
+	tool_dir: /data/dev/arch/ws-install/tools
+	build_dir: /tmp/tmp.2H9jeObod5/airootfs
+	mount_dir: /tmp/tmp.2H9jeObod5/mnt
+	log_dir: /data/dev/arch/ws-install/tools/logs
+	log_file: /data/dev/arch/ws-install/tools/logs/2018-05-03-24c25c6.log
+	pacman_conf: /data/dev/arch/ws-install/tools/../pacman.conf
+	cleanup: y
+	debug: y
+	verbose: y
+	efs_script: luks-lvm
+	eboot_script: grub-efi
+	special_data_dir: y
+	create_pool: n
+	hostname: WilTech-WS-24981
+	domain: inter.wiltech.org
+	admin: doc
+	sshd_pubkey: /home/doc/.ssh/id_rsa.pub
+	block_root_ssh: y
+	copy_nm_connection: y
+	build_custom: /root/build_custom.sh
+==================================
+Initialized.
+Provisioning /dev/sdc...
+Installing system to /tmp/tmp.2H9jeObod5/mnt...
+PACMAN: Installing packages to /tmp/tmp.2H9jeObod5/root
+Syncing provisioning package...
+RSYNC: /data/dev/arch/ws-install/tools/../airootfs/etc /data/dev/arch/ws-install/tools/../airootfs/root /data/dev/arch/ws-install/tools/../airootfs/usr /tmp/tmp.2H9jeObod5/mnt
+Provisioning /dev/sdc...
+Resolving dependencies...
+PACMAN: Installing packages to /tmp/tmp.2H9jeObod5/root
+=========== DEBUG INFO ===========
+Version: dev-2018-05-03-24c25c6
+Date: Thu May  3 21:15:24 EDT 2018
+CONFIG:
+	work_dir: /tmp/tmp.BNkqRgVPA3
+	tool_dir: /data/dev/arch/ws-install/tools
+	build_dir: /tmp/tmp.L11pD9DeXp/airootfs
+	mount_dir: /mnt/usb
+	log_dir: /data/dev/arch/ws-install/tools/logs
+	log_file: /data/dev/arch/ws-install/tools/logs/2018-05-03-24c25c6.log
+	pacman_conf: /data/dev/arch/ws-install/tools/../pacman.conf
+	cleanup: y
+	debug: y
+	verbose: y
+	efs_script: luks-lvm
+	eboot_script: grub-efi
+	special_data_dir: y
+	create_pool: n
+	hostname: WilTech-WS-3343
+	domain: inter.wiltech.org
+	admin: doc
+	sshd_pubkey: /home/doc/.ssh/id_rsa.pub
+	block_root_ssh: y
+	copy_nm_connection: y
+	build_custom: /root/build_custom.sh
+==================================
+Initialized.
+Provisioning /dev/sdd...
+ERROR => tools/build: Line "174": eval "${_efs_script} -w ${work_dir} -d ${install_dev} -s"

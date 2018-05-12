@@ -1,0 +1,56 @@
+# System
+fulgur-base
+fulgur-devel
+gvfs
+dosfstools
+ntfs-3g
+cryptsetup
+rsync
+
+# Desktop
+xorg
+xf86-input-libinput
+
+alsa-utils
+alsa-tools
+pulseaudio
+pulseaudio-alsa
+pulseaudio-bluetooth
+pavucontrol
+
+i3-gaps
+rofi
+i3blocks
+i3lock
+fws-i3-config-git
+dunst
+
+xfce4-terminal
+xfce4-power-manager
+network-manager-applet
+volumeicon
+
+lxappearance
+nitrogen
+
+# Utilities
+chromium
+chromium-widevine
+
+thunar
+thunar-volman
+thunar-archive-plugin
+thunar-media-tags-plugin
+
+python-neovim
+python2-neovim
+xsel
+xclip
+
+# Tools
+wireshark-gtk
+
+# GTK
+numix-gtk-theme
+numix-circle-icon-theme-git
+
